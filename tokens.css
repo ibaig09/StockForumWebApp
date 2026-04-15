@@ -1,0 +1,95 @@
+/* ============================================================
+   ChartHive Design System — Token Sheet
+   Brand: Indigo #4f46e5 · Signal Green #4ade80 · Navy #0f1117
+   ============================================================ */
+
+:root {
+  /* ── Canvas & Surfaces ── */
+  --ch-canvas:      #0f1117;
+  --ch-surface-1:   #13161f;
+  --ch-surface-2:   #1a1c2e;
+  --ch-surface-3:   #0c0e16;
+  --ch-border:      #1e2130;
+  --ch-border-mid:  #2a2d36;
+  --ch-border-hi:   #2e3058;
+
+  /* ── Brand ── */
+  --ch-indigo:      #4f46e5;
+  --ch-indigo-deep: #3730a3;
+  --ch-indigo-dim:  #1a1c2e;
+  --ch-indigo-text: #a5b4fc;
+  --ch-indigo-muted:#818cf8;
+
+  /* ── Signal Colors ── */
+  --ch-bull:        #4ade80;   /* bullish / positive / success */
+  --ch-bull-bg:     #0c2318;
+  --ch-bull-border: #14532d;
+  --ch-bear:        #f87171;   /* bearish / negative / danger */
+  --ch-bear-bg:     #1f1215;
+  --ch-bear-border: #3b1a1a;
+  --ch-caution:     #fbbf24;   /* caution / warning / VIX high */
+  --ch-caution-bg:  #1c1508;
+  --ch-caution-border: #44330a;
+
+  /* ── AI / Special ── */
+  --ch-ai:          #c4b5fd;
+  --ch-ai-bg:       #1e1730;
+  --ch-ai-border:   #3b2f6b;
+
+  /* ── Typography ── */
+  --ch-text-primary:   #e2e8f0;
+  --ch-text-secondary: #9ca3af;
+  --ch-text-muted:     #6b7280;
+  --ch-text-hint:      #4b5563;
+  --ch-text-white:     #ffffff;
+
+  /* ── Spacing ── */
+  --ch-radius-sm:  6px;
+  --ch-radius-md:  8px;
+  --ch-radius-lg:  10px;
+  --ch-radius-xl:  12px;
+  --ch-radius-pill:20px;
+
+  /* ── Typography Scale ── */
+  --ch-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ch-font-display: 700 28px/1 var(--ch-font);
+  --ch-font-h1:      600 20px/1.3 var(--ch-font);
+  --ch-font-h2:      600 16px/1.4 var(--ch-font);
+  --ch-font-body-strong: 500 14px/1.5 var(--ch-font);
+  --ch-font-body:    400 13px/1.6 var(--ch-font);
+  --ch-font-label:   400 11px/1 var(--ch-font);
+  --ch-font-micro:   400 10px/1 var(--ch-font);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--ch-canvas);
+  color: var(--ch-text-primary);
+  font: var(--ch-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Utility Classes ── */
+.text-bull    { color: var(--ch-bull); }
+.text-bear    { color: var(--ch-bear); }
+.text-indigo  { color: var(--ch-indigo-text); }
+.text-muted   { color: var(--ch-text-muted); }
+.text-hint    { color: var(--ch-text-hint); }
+.text-white   { color: var(--ch-text-white); }
+
+.bg-surface-1 { background: var(--ch-surface-1); }
+.bg-surface-2 { background: var(--ch-surface-2); }
+.bg-canvas    { background: var(--ch-canvas); }
+.bg-dark-nav  { background: var(--ch-surface-3); }
+
+.border-default { border: 1px solid var(--ch-border); }
+.border-mid     { border: 1px solid var(--ch-border-mid); }
+.border-indigo  { border: 1px solid var(--ch-border-hi); }
+
+.rounded-sm  { border-radius: var(--ch-radius-sm); }
+.rounded-md  { border-radius: var(--ch-radius-md); }
+.rounded-lg  { border-radius: var(--ch-radius-lg); }
+.rounded-xl  { border-radius: var(--ch-radius-xl); }
+.rounded-pill{ border-radius: var(--ch-radius-pill); }
+.rounded-full{ border-radius: 50%; }

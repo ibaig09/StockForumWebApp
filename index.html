@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChartHive — India's Trader Community</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg"/>
+  <link rel="stylesheet" href="../css/tokens.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+  <style>
+    body { min-height: 100vh; }
+    .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+    .ticker-strip { flex: 1; display: flex; gap: 8px; overflow: hidden; justify-content: center; }
+    .nav-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .notif-wrap { position: relative; }
+    .notif-btn {
+      background: var(--ch-surface-1); border: 1px solid var(--ch-border);
+      border-radius: var(--ch-radius-md); width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--ch-text-secondary);
+    }
+    /* App layout */
+    .body { display: grid; grid-template-columns: 200px 1fr 220px; flex: 1; overflow: hidden; height: calc(100vh - 52px); }
+    .sidebar-l { overflow-y: auto; }
+    .feed-main { overflow-y: auto; }
+    .sidebar-r { overflow-y: auto; background: var(--ch-surface-3); border-left: 1px solid var(--ch-border); padding: 14px; }
+    .feed-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--ch-border); position: sticky; top: 0; background: var(--ch-canvas); display: flex; align-items: center; gap: 8px; z-index: 10; }
+    .filter-pill { padding: 5px 14px; border-radius: var(--ch-radius-pill); font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; }
+    .filter-pill.active { background: var(--ch-indigo); color: #fff; border-color: var(--ch-indigo); }
+    .filter-pill.inactive { background: var(--ch-surface-1); color: var(--ch-text-muted); border-color: var(--ch-border); }
+    .posts-feed { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .post-card.pinned { border-color: var(--ch-border-hi); background: #111420; }
+    .pin-bar { background: var(--ch-surface-2); border-bottom: 1px solid var(--ch-border); padding: 4px 14px; display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ch-indigo-muted); font-weight: 600; letter-spacing: .05em; }
+    .side-section { padding: 4px 16px 10px; }
+    .side-section + .side-section { border-top: 1px solid var(--ch-border); padding-top: 14px; }
+    .side-stock { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 7px; cursor: pointer; font-size: 12px; color: var(--ch-text-secondary); }
+    .side-stock:hover { background: var(--ch-surface-1); }
+    .user-chip { display: flex; align-items: center; gap: 6px; }
+    .verified { font-size: 10px; color: var(--ch-bull); margin-left: 2px; }
+    .vote-up-active { color: var(--ch-indigo) !important; }
+    .lb-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .lb-rank { font-size: 10px; color: var(--ch-text-hint); width: 14px; text-align: center; }
+    .lb-name { font-size: 12px; color: #c7c8d9; flex: 1; }
+    .lb-karma { font-size: 11px; color: var(--ch-bull); font-weight: 600; }
+    .trending-tag { display: inline-block; background: var(--ch-surface-2); color: var(--ch-indigo-muted); border-radius: var(--ch-radius-sm); padding: 4px 9px; font-size: 11px; font-weight: 500; margin: 3px; cursor: pointer; }
+    .trending-tag:hover { background: var(--ch-border-hi); }
+    .karma-big { font-size: 32px; font-weight: 700; color: var(--ch-bull); margin-bottom: 2px; }
+    .karma-rank { font-size: 12px; color: var(--ch-indigo); font-weight: 600; margin-bottom: 10px; }
+    .karma-note { font-size: 10px; color: var(--ch-text-hint); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- NAV -->
+  <nav class="ch-nav">
+    <a class="ch-logo" href="index.html">
+      <svg viewBox="0 0 36 36" width="32" height="32">
+        <polygon points="18,3 31,10.5 31,25.5 18,33 5,25.5 5,10.5" fill="#4f46e5"/>
+        <line x1="11" y1="13" x2="11" y2="24" stroke="#4ade80" stroke-width="2" stroke-linecap="round"/>
+        <rect x="9" y="16.5" width="4" height="6" fill="#4ade80" rx="0.8"/>
+        <line x1="18" y1="11" x2="18" y2="25" stroke="#4ade80" stroke-width="2" stroke-linecap="round"/>
+        <rect x="16" y="14" width="4" height="9" fill="#4ade80" rx="0.8"/>
+        <line x1="25" y1="12.5" x2="25" y2="23" stroke="#f87171" stroke-width="2" stroke-linecap="round"/>
+        <rect x="23" y="16" width="4" height="5.5" fill="#f87171" rx="0.8"/>
+      </svg>
+      <span class="ch-logo-text">Chart<span>Hive</span></span>
+    </a>
+
+    <div class="ch-search">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="5" stroke="#4b5563" stroke-width="1.5"/>
+        <path d="M11 11l3 3" stroke="#4b5563" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input placeholder="Search stocks, threads…"/>
+    </div>
+
+    <div class="ticker-strip">
+      <span class="ch-ticker" style="color:#4ade80">NIFTY 24,812 ▲0.42%</span>
+      <span class="ch-ticker" style="color:#f87171">BANKNIFTY 52,341 ▼0.18%</span>
+      <span class="ch-ticker" style="color:#4ade80">SENSEX 81,450 ▲0.31%</span>
+      <span class="ch-ticker" style="color:#fbbf24">VIX 13.42 ▲</span>
+    </div>
+
+    <div class="nav-right">
+      <div class="notif-wrap">
+        <button class="notif-btn" aria-label="Notifications">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2a6 6 0 0 0-6 6v3l-1.5 2.5h15L16 11V8a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 16a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </button>
+        <div class="ch-notif-dot"></div>
+      </div>
+      <div class="ch-avatar ch-avatar-md ch-avatar-indigo">RK</div>
+      <button class="ch-btn ch-btn-primary ch-btn-sm">+ Post</button>
+    </div>
+  </nav>
+
+  <div class="body">
+    <!-- LEFT SIDEBAR -->
+    <aside class="ch-sidebar sidebar-l">
+      <div class="side-section" style="padding-top:16px">
+        <div class="ch-sidebar-label">Discover</div>
+        <a class="ch-sidebar-item active" href="index.html">Home feed</a>
+        <a class="ch-sidebar-item" href="#">Trending</a>
+        <a class="ch-sidebar-item" href="profile.html">My posts</a>
+        <a class="ch-sidebar-item" href="#">Market pulse</a>
+      </div>
+      <div class="side-section">
+        <div class="ch-sidebar-label">Watchlist</div>
+        <div class="side-stock"><span style="font-weight:500;color:var(--ch-text-primary)">NIFTY 50</span><span style="color:var(--ch-bull);font-weight:600">▲0.42%</span></div>
+        <div class="side-stock"><span>BANKNIFTY</span><span style="color:var(--ch-bear);font-weight:600">▼0.18%</span></div>
+        <div class="side-stock"><span>RELIANCE</span><span style="color:var(--ch-bull);font-weight:600">▲1.2%</span></div>
+        <div class="side-stock"><span>INFY</span><span style="color:var(--ch-bull);font-weight:600">▲0.8%</span></div>
+        <div class="side-stock"><span>TCS</span><span style="color:var(--ch-bear);font-weight:600">▼0.4%</span></div>
+        <div style="padding:6px 10px"><span style="font-size:11px;color:var(--ch-indigo);cursor:pointer">+ Add stock</span></div>
+      </div>
+      <div class="side-section">
+        <div class="ch-sidebar-label">Sections</div>
+        <a class="ch-sidebar-item" href="#">Options talk</a>
+        <a class="ch-sidebar-item" href="#">Technicals</a>
+        <a class="ch-sidebar-item" href="#">News &amp; macro</a>
+        <a class="ch-sidebar-item" href="#">IPO corner</a>
+        <a class="ch-sidebar-item" href="#">Beginner zone</a>
+      </div>
+    </aside>
+
+    <!-- MAIN FEED -->
+    <main class="feed-main">
+      <div class="feed-header">
+        <button class="filter-pill active">🔥 Hot</button>
+        <button class="filter-pill inactive">New</button>
+        <button class="filter-pill inactive">Top</button>
+        <button class="filter-pill inactive">Following</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--ch-text-hint)">All stocks</span>
+      </div>
+
+      <div class="posts-feed">
+        <!-- AI Banner -->
+        <div class="ch-ai-banner">
+          <div class="ch-ai-icon">✦</div>
+          <div>
+            <div class="ch-ai-title">AI market pulse · NIFTY expiry week</div>
+            <div class="ch-ai-body">Community is cautiously bullish. 68% of top posts lean bullish on 24,800 CE. Strong put writing at 24,500 noted by 3 top contributors. Bearish divergence flagged on BANKNIFTY.</div>
+            <div class="ch-ai-meta">Updated 8 min ago · Based on 142 posts · <a href="stock.html" style="color:var(--ch-indigo);text-decoration:none">See full breakdown ↗</a></div>
+          </div>
+        </div>
+
+        <!-- Pinned Post -->
+        <article class="ch-card post-card pinned">
+          <div class="pin-bar">📌 &nbsp;Pinned by moderator</div>
+          <div class="ch-post">
+            <div class="ch-post-vote">
+              <button class="ch-vote-btn" aria-label="Upvote">▲</button>
+              <span class="ch-vote-count">891</span>
+              <button class="ch-vote-btn" aria-label="Downvote">▼</button>
+            </div>
+            <div class="ch-post-body">
+              <div class="ch-post-meta">
+                <span class="ch-badge ch-badge-indigo">NIFTY</span>
+                <span class="ch-badge ch-badge-bull">Weekly recap</span>
+                <span class="ch-post-stat">8h ago</span>
+              </div>
+              <h2 class="ch-post-title"><a href="stock.html" style="text-decoration:none;color:inherit">Community rules &amp; how karma works on ChartHive — read before posting</a></h2>
+              <p class="ch-post-excerpt">No buy/sell tips. No guaranteed returns language. Always cite your analysis. Karma rewards quality discussion, not predictions…</p>
+              <div class="ch-post-footer">
+                <div class="user-chip">
+                  <div class="ch-avatar ch-avatar-sm ch-avatar-indigo">CH</div>
+                  <span style="font-size:11px;color:var(--ch-text-muted)">charthive_mod</span>
+                  <span class="verified">✓ Official</span>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px">
+                  <span class="ch-post-stat">💬 204</span>
+                  <span class="ch-post-stat">👁 18.4K</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Post 1 -->
+        <article class="ch-card">
+          <div class="ch-post">
+            <div class="ch-post-vote">
+              <button class="ch-vote-btn vote-up-active" aria-label="Upvote">▲</button>
+              <span class="ch-vote-count" style="color:var(--ch-indigo-muted)">312</span>
+              <button class="ch-vote-btn" aria-label="Downvote">▼</button>
+            </div>
+            <div class="ch-post-body">
+              <div class="ch-post-meta">
+                <span class="ch-badge ch-badge-indigo">NIFTY</span>
+                <span class="ch-tag">Analysis</span>
+                <span class="ch-post-stat">2h ago</span>
+              </div>
+              <h2 class="ch-post-title"><a href="stock.html" style="text-decoration:none;color:inherit">3 setups I'm watching for tomorrow's expiry — levels, OI data, and risk</a></h2>
+              <p class="ch-post-excerpt">Setup 1: Bull put spread 24700/24600 if we hold above 24750 till 1pm. Setup 2: Iron condor for low VIX play. PCR at 1.42 is supportive…</p>
+              <div class="ch-post-footer">
+                <div class="user-chip">
+                  <div class="ch-avatar ch-avatar-sm ch-avatar-indigo">AR</div>
+                  <span style="font-size:11px;color:var(--ch-text-muted)">analyst_ravi</span>
+                  <span class="verified">✓ Pro</span>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px">
+                  <span class="ch-post-stat">💬 84</span>
+                  <span class="ch-post-stat">👁 2.1K</span>
+                  <span class="ch-post-stat">🔖</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Post 2 -->
+        <article class="ch-card">
+          <div class="ch-post">
+            <div class="ch-post-vote">
+              <button class="ch-vote-btn" aria-label="Upvote">▲</button>
+              <span class="ch-vote-count">247</span>
+              <button class="ch-vote-btn" aria-label="Downvote">▼</button>
+            </div>
+            <div class="ch-post-body">
+              <div class="ch-post-meta">
+                <span class="ch-badge ch-badge-bull">RELIANCE</span>
+                <span class="ch-tag">Earnings</span>
+                <span class="ch-post-stat">4h ago</span>
+              </div>
+              <h2 class="ch-post-title">Q3 results deep dive — what the street is missing on Jio ARPU and retail margins</h2>
+              <p class="ch-post-excerpt">ARPU growth at ₹182/month beats consensus. Retail EBITDA margin jumped 8.1%→9.3%. New energy losses narrowing faster than guided…</p>
+              <div class="ch-post-footer">
+                <div class="user-chip">
+                  <div class="ch-avatar ch-avatar-sm ch-avatar-bull">DT</div>
+                  <span style="font-size:11px;color:var(--ch-text-muted)">deepak_trades</span>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px">
+                  <span class="ch-post-stat">💬 56</span><span class="ch-post-stat">👁 1.4K</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Post 3 -->
+        <article class="ch-card">
+          <div class="ch-post">
+            <div class="ch-post-vote">
+              <button class="ch-vote-btn" aria-label="Upvote">▲</button>
+              <span class="ch-vote-count">189</span>
+              <button class="ch-vote-btn" aria-label="Downvote">▼</button>
+            </div>
+            <div class="ch-post-body">
+              <div class="ch-post-meta">
+                <span class="ch-badge ch-badge-bear">BANKNIFTY</span>
+                <span class="ch-tag">Discussion</span>
+                <span class="ch-post-stat">5h ago</span>
+              </div>
+              <h2 class="ch-post-title">Anyone else seeing the Bankex vs BANKNIFTY divergence today? HDFC drag is real</h2>
+              <p class="ch-post-excerpt">PSU banks holding Banknifty but HDFC weighing down Bankex hard. Watch SBIN at ₹820 — that's the real pivot…</p>
+              <div class="ch-post-footer">
+                <div class="user-chip">
+                  <div class="ch-avatar ch-avatar-sm ch-avatar-ai">PO</div>
+                  <span style="font-size:11px;color:var(--ch-text-muted)">priya_options</span>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px">
+                  <span class="ch-post-stat">💬 43</span><span class="ch-post-stat">👁 980</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar-r">
+      <div class="ch-widget">
+        <div class="ch-widget-title">Top contributors</div>
+        <div class="lb-item">
+          <span class="lb-rank" style="color:#fbbf24">1</span>
+          <div class="ch-avatar ch-avatar-sm ch-avatar-indigo">AR</div>
+          <span class="lb-name">analyst_ravi</span><span class="lb-karma">4,820</span>
+        </div>
+        <div class="lb-item">
+          <span class="lb-rank" style="color:#9ca3af">2</span>
+          <div class="ch-avatar ch-avatar-sm ch-avatar-bull">DT</div>
+          <span class="lb-name">deepak_trades</span><span class="lb-karma">3,210</span>
+        </div>
+        <div class="lb-item">
+          <span class="lb-rank" style="color:#9ca3af">3</span>
+          <div class="ch-avatar ch-avatar-sm ch-avatar-ai">PO</div>
+          <span class="lb-name">priya_options</span><span class="lb-karma">2,840</span>
+        </div>
+      </div>
+
+      <div class="ch-widget">
+        <div class="ch-widget-title">Trending tags</div>
+        <span class="trending-tag">#Expiry</span>
+        <span class="trending-tag">#BullPutSpread</span>
+        <span class="trending-tag">#HDFC</span>
+        <span class="trending-tag">#VIX</span>
+        <span class="trending-tag">#Midcap</span>
+        <span class="trending-tag">#Q3Results</span>
+        <span class="trending-tag">#IronCondor</span>
+      </div>
+
+      <div class="ch-widget">
+        <div class="ch-widget-title">Your karma</div>
+        <div class="karma-big">1,240</div>
+        <div class="karma-rank">Rank: Rising trader</div>
+        <div class="ch-progress-bg"><div class="ch-progress-fill" style="width:62%"></div></div>
+        <div class="karma-note">760 more to unlock Pro badge</div>
+      </div>
+
+      <div class="ch-widget">
+        <div class="ch-disclaimer">All discussions on ChartHive are educational only. Not financial advice. SEBI registration not implied. Trade at your own risk.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+</body>
+</html>
